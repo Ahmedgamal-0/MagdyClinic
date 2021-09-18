@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MagdyClinic.Entities
 {
-    public class Patient
+    public class Doctor
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -15,16 +15,8 @@ namespace MagdyClinic.Entities
         public string Name { get; set; }
         public string Occupation { get; set; }
         public int Age { get; set; }
-        public int Length { get; set; }
-        public int Weight { get; set; }
-        public string BloodPressure { get; set; }
-        public string RBS { get; set; }
         public string MobileNumber { get; set; }
         public string Email { get; set; }
-        public IEnumerable<Answer> Answers { get; set; }
-        public Diagnose Diagnose { get; set; }
-        [ForeignKey("DoctorId")]
-        public Doctor Doctor { get; set; }
-        public int DoctorId { get; set; }
+        public IEnumerable<Patient> Patients { get; set; }
     }
 }
