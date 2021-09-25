@@ -10,9 +10,11 @@ namespace MagdyClinic.Services
     public class MagdyRepo:IMagdyRepo
     {
         MagdyClinicDBContext _MagdyClinicDBContext;
-        public MagdyRepo(MagdyClinicDBContext MagdyClinicDBContext)
+        IMailingService _MailingService;
+        public MagdyRepo(MagdyClinicDBContext MagdyClinicDBContext,IMailingService MailingService)
         {
             _MagdyClinicDBContext = MagdyClinicDBContext;
+            _MailingService = MailingService;
         }
         public void AddCategory(Category category)
         {
@@ -91,6 +93,89 @@ namespace MagdyClinic.Services
         {
             return _MagdyClinicDBContext.Doctor.FirstOrDefault(o => o.Id == DoctorId);
         }
+        public void AddDiagnose(Diagnose Diagnose)
+        {
+            _MagdyClinicDBContext.Diagnose.Add(Diagnose);
+        }
+        public Diagnose GetDiagnose(int PatientId)
+        {
+            return _MagdyClinicDBContext.Diagnose.FirstOrDefault(o => o.PatientId == PatientId);
+        }
 
+        public void AddPainSeverity(PainSeverity PainSeverity)
+        {
+            _MagdyClinicDBContext.PainSeverity.Add(PainSeverity);
+        }
+
+        public IEnumerable<PainSeverity> GetPainSeverity(int PatientId)
+        {
+            var PainSeverities = _MagdyClinicDBContext.PainSeverity.Where(o => o.PatientId == PatientId).ToList();
+            return PainSeverities;
+        }
+
+        public void AddScheduleCriteria(DoctorScheduleCriteria DoctorScheduleCriteria)
+        {
+            _MagdyClinicDBContext.DoctorScheduleCriteria.Add(DoctorScheduleCriteria);   
+        }
+        public IEnumerable<Slot> AddSlots(DoctorScheduleCriteria DoctorScheduleCriteria)
+        {
+            string[] StartTime = DoctorScheduleCriteria.StartTime.ToString().Split('T');
+            TimeSpan TimeDifferance = DoctorScheduleCriteria.EndTime - DoctorScheduleCriteria.StartTime;
+            int Hours = TimeDifferance.Hours;
+            int Minutes = TimeDifferance.Minutes;
+            int Slots = ((Hours * 60) + Minutes) / DoctorScheduleCriteria.SlotDuration;
+            DateTime SlotStart = DoctorScheduleCriteria.StartTime;
+            
+            var FinalSlots = new List<Slot>();
+            
+            for (int i = 0; i < Slots; i++)
+            {
+                var NewSlot = new Slot();
+                NewSlot.DateTime = SlotStart;
+                NewSlot.IsTaken = false;
+                NewSlot.DoctorScheduleCriteriaId = DoctorScheduleCriteria.Id;
+                SlotStart = NewSlot.DateTime.AddHours(DoctorScheduleCriteria.SlotDuration / 60);
+                SlotStart.AddMinutes(DoctorScheduleCriteria.SlotDuration % 60);
+                FinalSlots.Add(NewSlot);
+                _MagdyClinicDBContext.Slot.Add(NewSlot);
+                Save();
+                
+
+            }
+            /*foreach (var sl in FinalSlots)
+            {
+                _MagdyClinicDBContext.Add(sl);
+            }
+                Save();
+            */
+            return FinalSlots;
+        }
+
+        public IEnumerable<DoctorScheduleCriteria> GetScheduleCriteria(int DoctorId)
+        {
+            var DoctorSchedules = _MagdyClinicDBContext.DoctorScheduleCriteria.Where(o => o.DoctorId == DoctorId).ToList();
+            return DoctorSchedules;
+        }
+
+        public void AddSlot(Slot Slot)
+        {
+            _MagdyClinicDBContext.Slot.Add(Slot);
+        }
+
+        public IEnumerable<Slot> GetSlots(int PatientId)
+        {
+            var Slots = _MagdyClinicDBContext.Slot.Where(o => o.PatientId == PatientId);
+            return Slots;
+        }
+        public void ReserveSlot(int PatientId, int SlotId)
+        {
+            var slot = _MagdyClinicDBContext.Slot.FirstOrDefault(o => o.Id == SlotId);
+            slot.PatientId = PatientId;
+            slot.IsTaken = true;
+            var Patient = GetPatient(PatientId);
+            _MailingService.SendEmailAsync(Patient.Email, "Slot Reservation", "Hi " + Patient.Name + " You have reservered slot in : " + slot.DateTime + " Please Try to be there atleast 5 mins before session");
+            _MagdyClinicDBContext.Slot.Update(slot);
+            
+        }
     }
 }
