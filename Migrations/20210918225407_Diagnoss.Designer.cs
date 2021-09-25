@@ -4,14 +4,16 @@ using MagdyClinic.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MagdyClinic.Migrations
 {
     [DbContext(typeof(MagdyClinicDBContext))]
-    partial class MagdyClinicDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210918225407_Diagnoss")]
+    partial class Diagnoss
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,67 +119,6 @@ namespace MagdyClinic.Migrations
                     b.ToTable("Doctor");
                 });
 
-            modelBuilder.Entity("MagdyClinic.Entities.DoctorScheduleCriteria", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Day")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SlotDuration")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId");
-
-                    b.ToTable("DoctorScheduleCriteria");
-                });
-
-            modelBuilder.Entity("MagdyClinic.Entities.PainSeverity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("DayOrNight")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PainLocation")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PainRadiation")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PainScale")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PainSeverityTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("PainSeverity");
-                });
-
             modelBuilder.Entity("MagdyClinic.Entities.Patient", b =>
                 {
                     b.Property<int>("Id")
@@ -191,7 +132,7 @@ namespace MagdyClinic.Migrations
                     b.Property<string>("BloodPressure")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("DoctorId")
+                    b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
@@ -245,32 +186,6 @@ namespace MagdyClinic.Migrations
                     b.ToTable("Question");
                 });
 
-            modelBuilder.Entity("MagdyClinic.Entities.Slot", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DoctorScheduleCriteriaId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsTaken")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorScheduleCriteriaId");
-
-                    b.ToTable("Slot");
-                });
-
             modelBuilder.Entity("MagdyClinic.Entities.Answer", b =>
                 {
                     b.HasOne("MagdyClinic.Entities.Patient", "Patient")
@@ -293,33 +208,15 @@ namespace MagdyClinic.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("MagdyClinic.Entities.DoctorScheduleCriteria", b =>
+            modelBuilder.Entity("MagdyClinic.Entities.Patient", b =>
                 {
                     b.HasOne("MagdyClinic.Entities.Doctor", "Doctor")
-                        .WithMany()
+                        .WithMany("Patients")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Doctor");
-                });
-
-            modelBuilder.Entity("MagdyClinic.Entities.PainSeverity", b =>
-                {
-                    b.HasOne("MagdyClinic.Entities.Patient", "Patient")
-                        .WithMany("PainSeverities")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
-            modelBuilder.Entity("MagdyClinic.Entities.Patient", b =>
-                {
-                    b.HasOne("MagdyClinic.Entities.Doctor", null)
-                        .WithMany("Patients")
-                        .HasForeignKey("DoctorId");
                 });
 
             modelBuilder.Entity("MagdyClinic.Entities.Question", b =>
@@ -333,17 +230,6 @@ namespace MagdyClinic.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("MagdyClinic.Entities.Slot", b =>
-                {
-                    b.HasOne("MagdyClinic.Entities.DoctorScheduleCriteria", "DoctorScheduleCriteria")
-                        .WithMany("Slots")
-                        .HasForeignKey("DoctorScheduleCriteriaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DoctorScheduleCriteria");
-                });
-
             modelBuilder.Entity("MagdyClinic.Entities.Category", b =>
                 {
                     b.Navigation("Questions");
@@ -354,18 +240,11 @@ namespace MagdyClinic.Migrations
                     b.Navigation("Patients");
                 });
 
-            modelBuilder.Entity("MagdyClinic.Entities.DoctorScheduleCriteria", b =>
-                {
-                    b.Navigation("Slots");
-                });
-
             modelBuilder.Entity("MagdyClinic.Entities.Patient", b =>
                 {
                     b.Navigation("Answers");
 
                     b.Navigation("Diagnose");
-
-                    b.Navigation("PainSeverities");
                 });
 #pragma warning restore 612, 618
         }

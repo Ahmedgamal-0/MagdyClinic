@@ -7,24 +7,20 @@ using System.Threading.Tasks;
 
 namespace MagdyClinic.Entities
 {
-    public class Diagnose
+    public class PainSeverity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public string DoctorDiagnose { get; set; }
-        public int SessionsNumber { get; set; }
-        public string Comments { get; set; }
-        public DateTime DiagnoseDate { get; set; }
-        public int DoctorId { get; set; }
+        public int PainScale { get; set; }
+        public string PainLocation { get; set; }
+        public string DayOrNight { get; set; }
+        public string PainRadiation { get; set; }
+        public DateTime PainSeverityTime { get; set; }
 
         [ForeignKey("PatientId")]
         public Patient Patient { get; set; }
         public int PatientId { get; set; }
 
-       /* [ForeignKey("PatientId")]
-        public Patient Patient { get; set; }
-        public int PatientId { get; set; }
-       */
     }
 }

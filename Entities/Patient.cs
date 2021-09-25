@@ -21,10 +21,9 @@ namespace MagdyClinic.Entities
         public string RBS { get; set; }
         public string MobileNumber { get; set; }
         public string Email { get; set; }
-        public IEnumerable<Answer> Answers { get; set; }
+        public ICollection <Answer> Answers { get; set; }
         public Diagnose Diagnose { get; set; }
-        [ForeignKey("DoctorId")]
-        public Doctor Doctor { get; set; }
-        public int DoctorId { get; set; }
+        public ICollection<PainSeverity> PainSeverities {get;set;}
+
     }
 }

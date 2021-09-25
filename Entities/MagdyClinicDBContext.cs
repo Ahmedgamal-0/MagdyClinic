@@ -18,7 +18,12 @@ namespace MagdyClinic.Entities
         public DbSet<Question> Question { get; set; }
         public DbSet<Answer> Answer { get; set; }
         public DbSet<Doctor> Doctor { get; set; }
-    
+        public DbSet<Diagnose> Diagnose { get; set; }
+        public DbSet<DoctorScheduleCriteria> DoctorScheduleCriteria { get; set; }
+        public DbSet<Slot> Slot { get; set; }
+        public DbSet<PainSeverity> PainSeverity { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Patient>().ToTable("Patient");
@@ -26,9 +31,11 @@ namespace MagdyClinic.Entities
             modelBuilder.Entity<Question>().ToTable("Question");
             modelBuilder.Entity<Answer>().ToTable("Answer");
             modelBuilder.Entity<Doctor>().ToTable("Doctor");
-          
+            modelBuilder.Entity<Diagnose>().ToTable("Diagnose");
+            modelBuilder.Entity<PainSeverity>().ToTable("PainSeverity");
+            modelBuilder.Entity<Slot>().ToTable("Slot");
+            modelBuilder.Entity<DoctorScheduleCriteria>().ToTable("DoctorScheduleCriteria");
 
-           
         }
     }
 }

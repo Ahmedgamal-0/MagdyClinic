@@ -18,6 +18,15 @@ namespace MagdyClinic.Mapping
             CreateMap<Answer, AnswerForCreation>().ReverseMap();
             CreateMap<QuestionDto, Question>().ReverseMap();
             CreateMap<Doctor,DoctorForCreation>().ReverseMap();
+            CreateMap<Diagnose, DiagnoseForCreation>().ReverseMap();
+            CreateMap<Diagnose, DiagnoseDto>().ReverseMap();
+            CreateMap<PainSeverity, PainSeverityDto>().ReverseMap();
+            CreateMap<PainSeverity, PainSeverityForCreation>().ReverseMap();
+            CreateMap<Slot, SlotForCreation>().ReverseMap();
+            CreateMap<Slot, SlotDto>().ReverseMap();
+            CreateMap<DoctorScheduleCriteria,ScheduleDto>().ReverseMap();
+            CreateMap<DoctorScheduleCriteria,ScheduleForCreation>().ReverseMap();
+
         }
     }
 }

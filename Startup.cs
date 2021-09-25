@@ -1,7 +1,8 @@
+using MagdyClinic.Services;
 using AutoMapper;
 using MagdyClinic.Entities;
 using MagdyClinic.Mapping;
-using MagdyClinic.Services;
+using MagdyClinic.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,13 +30,18 @@ namespace MagdyClinic
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+
             var mappingConfig = new MapperConfiguration(mc => {
                 mc.AddProfile(new MappingProfile());
             });
+
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
             services.AddDbContext<MagdyClinicDBContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<IMagdyRepo, MagdyRepo>();
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+            services.AddTransient<IMailingService, MailingService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,11 +59,9 @@ namespace MagdyClinic
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

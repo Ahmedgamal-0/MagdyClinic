@@ -173,9 +173,8 @@ namespace MagdyClinic.Controllers
                 QuestionsToReturn.Add(_Mapper.Map<QuestionDto>(Question_));
             }
             return Ok(QuestionsToReturn);
-
-
         }
+
         [HttpGet("{QuestionId}/CategoryQuestions")]
         public IActionResult GetCategoryQuestions(int QuestionId)
         {
@@ -190,8 +189,8 @@ namespace MagdyClinic.Controllers
                 QuestionsToReturn.Add(_Mapper.Map<QuestionDto>(Question_));
             }
             return Ok(QuestionsToReturn);
-
         }
+
         [HttpPost("Doctor")]
         public IActionResult AddDoctor([FromBody] DoctorForCreation DoctorForCreation)
         {
@@ -207,6 +206,7 @@ namespace MagdyClinic.Controllers
             }
             return Ok(Doctor);
         }
+
         [HttpGet("{DoctorId}/Doctor")]
         public IActionResult AddDoctor(int DoctorID)
         {
@@ -218,5 +218,134 @@ namespace MagdyClinic.Controllers
             
             return Ok(Doctor);
         }
+
+        [HttpPost("{PatientId}/Diagnose")]
+        public IActionResult AddDiagnose(int PatientId,[FromBody]DiagnoseForCreation DiagnoseForCreation)
+        {
+            if (_MagdyRepo.GetDoctor(DiagnoseForCreation.DoctorId)==null)
+            {
+                return NotFound();
+            }
+            if (_MagdyRepo.GetPatient(PatientId) == null)
+            {
+                return NotFound();
+            }
+            var Diagnose = _Mapper.Map<Diagnose>(DiagnoseForCreation);
+            Diagnose.PatientId = PatientId;
+            _MagdyRepo.AddDiagnose(Diagnose);
+            if (!_MagdyRepo.Save())
+            {
+                throw new Exception("Failed To Save Diagnose");
+            }
+            return Ok();
+
+        }
+
+        [HttpGet("{PatientId}/Diagnose")]
+        public IActionResult GetDiagnose(int PatientId)
+        {
+            Diagnose Diagnose = _MagdyRepo.GetDiagnose(PatientId);
+            if (Diagnose == null)
+            {
+                return NotFound();
+            }
+            var DiagnoseToReturn = _Mapper.Map<DiagnoseDto>(Diagnose);
+            
+            return Ok(DiagnoseToReturn);
+
+        }
+
+        [HttpPost("{DoctorId}/DoctorScheduleCriteria")]
+        public IActionResult AddDoctorSchedule(int DoctorId,[FromBody]ScheduleForCreation ScheduleForCreation)
+        {
+            if (ScheduleForCreation == null)
+            {
+                return BadRequest();
+            }
+            if (_MagdyRepo.GetDoctor(DoctorId) == null)
+            {
+                return NotFound();
+            }
+            var Schedule = _Mapper.Map<DoctorScheduleCriteria>(ScheduleForCreation);
+            _MagdyRepo.AddScheduleCriteria(Schedule);
+            if (!_MagdyRepo.Save())
+            {
+                throw new Exception("Failed to save");
+            }
+            var sl=_MagdyRepo.AddSlots(Schedule);
+            return Ok() ;
+        }
+
+        [HttpGet("{DoctorId}/DoctorScheduleCriteria")]
+        public IActionResult GetScheduleCriteria(int DoctorId)
+        {
+            if (_MagdyRepo.GetDoctor(DoctorId)==null)
+            {
+                return NotFound();
+            }
+            var DoctorSchedule = _MagdyRepo.GetScheduleCriteria(DoctorId);
+            var DS = new List<ScheduleDto>();
+            var ScheduleToReturn = new ScheduleDto();
+            foreach (var Schedule in DoctorSchedule)
+            {
+                ScheduleToReturn = _Mapper.Map<ScheduleDto>(Schedule);
+                DS.Add(ScheduleToReturn);
+            }
+            return Ok(DS);
+        }
+
+        [HttpPost("{PatientId}/PainSeverity")]
+        public IActionResult AddPatientSeverity([FromBody] PainSeverityForCreation PainSeverityForCreation,int PatientId)
+        {
+            if (PainSeverityForCreation == null)
+            {
+                return BadRequest();
+            }
+            if (_MagdyRepo.GetPatient(PatientId) == null)
+            {
+                return NotFound();
+            }
+            var PainSeverity = _Mapper.Map<PainSeverity>(PainSeverityForCreation);
+            _MagdyRepo.AddPainSeverity(PainSeverity);
+            if (!_MagdyRepo.Save())
+            {
+                throw new Exception("Failed To Save");
+            }
+            return Ok();
+
+        }
+        [HttpGet("{PatientId}/PainSeverity")]
+        public IActionResult GetPatientSeverity( int PatientId)
+        {
+           
+            if (_MagdyRepo.GetPatient(PatientId) == null)
+            {
+                return NotFound();
+            }
+            var PainSeverity = _MagdyRepo.GetPainSeverity(PatientId);
+            var PainSeverityList = new List<PainSeverityDto>();
+            foreach(var Pain in PainSeverity)
+            {
+                PainSeverityList.Add(_Mapper.Map<PainSeverityDto>(Pain));
+            }
+            
+            return Ok(PainSeverityList);
+
+        }
+        [HttpGet("{PatientId}/SlotReserevation/{SlotId}")]
+        public IActionResult ReserveSlot(int PatientId,int SlotId)
+        {
+            if (_MagdyRepo.GetPatient(PatientId)==null)
+            {
+                return NotFound();
+            }
+            _MagdyRepo.ReserveSlot(PatientId, SlotId);
+            if (!_MagdyRepo.Save())
+            {
+                throw new Exception("Failed ot update");
+            }
+            return Ok();
+        }
+        
     }
 }
