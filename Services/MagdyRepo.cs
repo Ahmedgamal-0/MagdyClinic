@@ -177,5 +177,24 @@ namespace MagdyClinic.Services
             _MagdyClinicDBContext.Slot.Update(slot);
             
         }
+
+        public Doctor Authenticate(string DoctorName, string Password)
+        {
+            if (string.IsNullOrEmpty(DoctorName) || string.IsNullOrEmpty(Password))
+                return null;
+
+            var Doctor = _MagdyClinicDBContext.Doctor.SingleOrDefault(x => x.Name == DoctorName && x.Password==Password);
+
+            // check if username exists
+            if (Doctor == null)
+                return null;
+
+            // check if password is correct
+            // if (!VerifyPasswordHash(password, admin.PasswordHash, admin.PasswordSalt))
+            //   return null;
+
+            // authentication successful
+            return Doctor;
+        }
     }
 }

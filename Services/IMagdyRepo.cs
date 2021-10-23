@@ -31,6 +31,7 @@ namespace MagdyClinic.Services
         public void AddSlot(Slot Slot);
         public IEnumerable<Slot> GetSlots(int PatientId);
         public void ReserveSlot(int PatientId, int SlotId);
+        public Doctor Authenticate(string DoctorName, string Password);
         public bool Save();
     }
 }
