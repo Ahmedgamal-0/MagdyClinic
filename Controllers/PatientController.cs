@@ -7,6 +7,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MagdyClinic.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
+using MagdyClinic.Helpers;
+using Microsoft.Extensions.Options;
 
 namespace MagdyClinic.Controllers
 {
@@ -15,10 +21,12 @@ namespace MagdyClinic.Controllers
     {
         IMapper _Mapper;
         IMagdyRepo _MagdyRepo;
-        public PatientController(IMapper Mapper, IMagdyRepo MagdyRepo)
+        private readonly JWT _JWT;
+        public PatientController(IMapper Mapper, IMagdyRepo MagdyRepo,IOptions<JWT>JWT)
         {
             _Mapper = Mapper;
             _MagdyRepo = MagdyRepo;
+            _JWT = JWT.Value;
         }
         [HttpGet("")]
         public IActionResult Test()
@@ -159,6 +167,8 @@ namespace MagdyClinic.Controllers
             var AnswersToReturn = _MagdyRepo.GetAnswers(PatientId);
             return Ok(AnswersToReturn);
         }
+
+
         [HttpGet("MainQuestions")]
         public IActionResult GetMainQuestions()
         {
@@ -174,6 +184,7 @@ namespace MagdyClinic.Controllers
             }
             return Ok(QuestionsToReturn);
         }
+
 
         [HttpGet("{QuestionId}/CategoryQuestions")]
         public IActionResult GetCategoryQuestions(int QuestionId)
@@ -191,6 +202,7 @@ namespace MagdyClinic.Controllers
             return Ok(QuestionsToReturn);
         }
 
+
         [HttpPost("Doctor")]
         public IActionResult AddDoctor([FromBody] DoctorForCreation DoctorForCreation)
         {
@@ -207,6 +219,7 @@ namespace MagdyClinic.Controllers
             return Ok(Doctor);
         }
 
+
         [HttpGet("{DoctorId}/Doctor")]
         public IActionResult AddDoctor(int DoctorID)
         {
@@ -218,6 +231,7 @@ namespace MagdyClinic.Controllers
             
             return Ok(Doctor);
         }
+
 
         [HttpPost("{PatientId}/Diagnose")]
         public IActionResult AddDiagnose(int PatientId,[FromBody]DiagnoseForCreation DiagnoseForCreation)
@@ -314,6 +328,7 @@ namespace MagdyClinic.Controllers
             return Ok();
 
         }
+
         [HttpGet("{PatientId}/PainSeverity")]
         public IActionResult GetPatientSeverity( int PatientId)
         {
@@ -332,6 +347,7 @@ namespace MagdyClinic.Controllers
             return Ok(PainSeverityList);
 
         }
+
         [HttpGet("{PatientId}/SlotReserevation/{SlotId}")]
         public IActionResult ReserveSlot(int PatientId,int SlotId)
         {
@@ -346,6 +362,61 @@ namespace MagdyClinic.Controllers
             }
             return Ok();
         }
-        
+        [AllowAnonymous]
+        [HttpPost("authenticate")]
+        public IActionResult Authenticate([FromBody] UserLoginModel model) //Get Token - login
+        {
+            var Doctor = _MagdyRepo.Authenticate(model.UserName, model.Password);
+
+            if (Doctor == null)
+                return BadRequest(new { message = "Username or password is incorrect" });
+
+            var tokenString = GenerateJwtToken(Doctor);
+
+            // return basic user info and authentication token
+            return Ok(new
+            {
+                // Id = admin.Id,
+                // Username = admin.UserName,
+                Token = tokenString
+            });
+        }
+
+        public string GenerateJwtToken(Doctor Doctor)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_JWT.Key);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                /* Subject = new ClaimsIdentity(new[] {
+                     new Claim("id", admin.Id.ToString()),
+                     new Claim("UserName", admin.UserName.ToString())
+
+                 }),*/
+                Expires = DateTime.UtcNow.AddMinutes(_JWT.DurationInMins),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+        /*  [HttpPost("Send")]
+          public async Task<IActionResult> SendEmail([FromForm] EmailDto email)
+          {
+              await _mailingService.SendEmailAsync(email.ToEmail, email.Subject, email.Body, email.Attachments);
+              return Ok();
+          }*/
+
+        [HttpPost("DecodeJwt")]
+        public IActionResult DecodeJwt([FromBody] Decoding jwtEncodedString)
+        {
+            var token = jwtEncodedString;
+            var handler = new JwtSecurityTokenHandler();
+            var jwtSecurityToken = handler.ReadJwtToken(token.Token);
+            return Ok(jwtSecurityToken.Claims);
+
+            //return Ok(jwtSecurityToken.Claims.First(claim => claim.Type == "UserName").Value);
+        }
+
     }
 }
